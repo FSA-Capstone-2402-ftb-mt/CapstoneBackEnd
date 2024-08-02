@@ -40,7 +40,7 @@ export const fetchAllWords = async () => {
 export const fetchSingleWord = async (id) => {
     try {
         const { rows } = await client.query(`
-            SELECT * FROM word_bank
+            SELECT * FROM public.word_bank
             WHERE id = $1
         `, [id]);
         return rows[0];
@@ -152,18 +152,29 @@ export const scheduleNextMonthWords = async () => {
     await populateMonthWithWords(nextMonth);
 };
 
-// Function to get the current month words
+// Function to fetch all current words of the month
 export const fetchCurrentMonthWords = async () => {
     try {
         const currentMonth = new Date().toLocaleString('default', { month: 'long' });
         const { rows } = await client.query(`
-            SELECT * FROM month_words WHERE month_name = $1
+            SELECT words FROM month_words WHERE month_name = $1
         `, [currentMonth]);
 
-        return rows[0];
+        if (rows.length === 0) {
+            throw new Error('No words found for the current month');
+        }
+
+        const wordsJson = rows[0].words;
+        const wordsArray = Object.keys(wordsJson).map(day => ({
+            day: day.replace('day', ''), // Remove the 'day' prefix
+            word: wordsJson[day]
+        }));
+
+        return { month: currentMonth, words: wordsArray };
     } catch (error) {
         console.error('Failed to get current month words!');
         console.error(error);
+        throw error;
     }
 };
 

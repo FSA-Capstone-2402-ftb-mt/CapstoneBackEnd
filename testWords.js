@@ -1,4 +1,4 @@
-import { seedWords, fetchAllWords, fetchSingleWord, fetchRandomWord, createMonthWordsTable, initializeMonthWords, getCurrentMonthWords, changeWordOfTheDay } from './models/words.js';
+import { seedWords, fetchAllWords, fetchSingleWord, fetchRandomWord, createMonthWordsTable, initializeMonthWords, changeWordOfTheDay } from './models/words.js';
 import { connectDataBase } from './config/db.js';
 
 // Initialize the database connection
@@ -55,10 +55,10 @@ const runTests = async () => {
     await initDB();
     // await testSeedWords();
     // await testFetchAllWords();
-    await testFetchSingleWord(5); // Replace with a valid ID from your word_bank
+    // await testFetchSingleWord(5); // Replace with a valid ID from your word_bank
     // await testFetchRandomWord(3); // Replace with a valid user ID
     // await testCreateMonthWordsTable();
-    // await testInitializeMonthWords();
+    await testInitializeMonthWords();
     // await testGetCurrentMonthWords();
     // await testChangeWordOfTheDay('July', 5, 'dread'); // Replace 'newword' with a valid word from word_bank
 };

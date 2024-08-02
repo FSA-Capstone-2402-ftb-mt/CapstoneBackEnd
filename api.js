@@ -16,6 +16,6 @@ router.use("/score", scoreRoutes);
 router.use("/game", gameRoutes);
 router.use("/stats", statsRoutes);
 router.use("/admin", adminRoutes);
-router.use("words", wordsRoutes);
+router.use("/words", wordsRoutes);
 
 export default router;

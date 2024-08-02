@@ -15,6 +15,7 @@ export const getAllWords = async (req, res) => {
 
 // Function to get single word by id
 export const getSingleWord = async (req, res) => {
+    const { id } = req.params;
     try {
         const word = await fetchSingleWord(id);
         if (!word) {
@@ -58,14 +59,14 @@ export const populateWordsPerMonth = async (req, res) => {
     }
 };
 
+// Controller to get the current month's words
 export const getCurrentMonthWords = async (req, res) => {
-    const { monthName } = req.body;
     try {
-        await fetchCurrentMonthWords(monthName);
-        res.status(200).send('Words for ${monthName} were successfully fetched');
+        const words = await fetchCurrentMonthWords();
+        res.status(200).json(words);
     } catch (error) {
         res.status(500).json({
-            message: 'Failed to fetch words for this month'
+            message: 'Failed to fetch words for the current month'
         });
     }
 };
