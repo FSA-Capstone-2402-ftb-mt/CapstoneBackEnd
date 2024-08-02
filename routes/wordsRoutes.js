@@ -11,6 +11,6 @@ router.put('/change', modifyWordOfTheDay);
 router.get('/month/current-month', getCurrentMonthWords);
 router.post('/add', addWord);
 router.delete('delete/:id', deleteWord);
-router.get('/todaysWord', getWordOfTheDay);
+router.get('/wordOf/todaysWord', getWordOfTheDay);
 
 export default router;

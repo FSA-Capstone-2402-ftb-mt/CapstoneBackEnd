@@ -255,7 +255,7 @@ export const fetchWordOfTheDay = async () => {
             FROM month_words
             WHERE month_name = $2
         `, [`day${currentDate}`, currentMonth]);
-            return rows[0].word_of_the_day;
+        return rows[0].word_of_the_day;
     } catch (error) {
         console.error('Failed to fetch word of the day');
         console.error(error);
