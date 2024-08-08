@@ -1,5 +1,5 @@
 import { client } from '../config/db.js';
-import { addWordToBank, changeWordOfTheDay, createMonthWordsTable, deleteWordFromBank, fetchAllWords, fetchCurrentMonthWords, fetchRandomWord, fetchSingleWord, fetchWordOfTheDay, populateMonthWithWords } from '../models/words.js';
+import { addWordToBank, changeWordOfTheDay, createMonthWordsTable, deleteWordFromBank, fetchAllWords, fetchCurrentMonthWords, fetchRandomWord, fetchSingleWord, fetchWordOfTheDay, fetchWordsForMonth, populateMonthWithWords } from '../models/words.js';
 
 // Function to export all the words
 export const getAllWords = async (req, res) => {
@@ -116,5 +116,26 @@ export const getWordOfTheDay = async (req, res) => {
         res.status(500).json({
             message: 'Failed to fetch word of the day'
         });
+    }
+};
+
+// Function to request specific words per month selected
+export const getWordsForMonth = async (req, res) => {
+    const month = req.params.month;
+    try {
+        const words = await fetchWordsForMonth(month);
+
+        if (!words) {
+            return res.status(404).send('No words for the specified month');
+        }
+
+        const wordArray = Object.keys(words).map(day => ({
+            day: day.replace('day', ''),
+            word: words[day]
+        }));
+        res.json({month, words: wordArray});
+    }catch (error) {
+        console.error('Failed to fetch words for the month', error);
+        res.status(500).send('Failed to fetch words for the month');
     }
 };

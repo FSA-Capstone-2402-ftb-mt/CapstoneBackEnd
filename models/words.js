@@ -27,7 +27,7 @@ export const seedWords = async () => {
 export const fetchAllWords = async () => {
     try {
         const { rows: word_bank } = await client.query(`
-            SELECT * FROM public.word_bank
+            SELECT word FROM public.word_bank
         `);
         return word_bank;
     } catch (error) {
@@ -115,15 +115,16 @@ const fetchRandomWords = async (numWords) => {
 };
 
 // Function to populate words for the month
-export const populateMonthWithWords = async (monthName) => {
+export const populateMonthWithWords = async (monthName, usedWords) => {
     try {
         const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-        const randomWords = await fetchRandomWords(daysInMonth);
+        const randomWords = await fetchRandomWords(daysInMonth, usedWords);
 
         // Create a JSON object with keys for each day
         const wordsForMonth = {};
         randomWords.forEach((word, index) => {
             wordsForMonth[`day${index + 1}`] = word;
+            usedWords.add(word);
         });
 
         await client.query(`
@@ -132,6 +133,30 @@ export const populateMonthWithWords = async (monthName) => {
             ON CONFLICT (month_name)
             DO UPDATE SET words = $2::json;
         `, [monthName, JSON.stringify(wordsForMonth)]);
+        console.log(`Words for ${monthName} populated successfully!`);
+    } catch (error) {
+        console.error('Failed to populate words for the month!');
+        console.error(error);
+    }
+};
+
+// Function to opulate words for the month ensuring no duplicates across months
+export const seedMonthWithWords = async (monthName, wordsForMonth) => {
+    try {
+        const daysInMonth = wordsForMonth.length;
+
+        // Create a JSON object with keys for each day
+        const wordsObject = {};
+        wordsForMonth.forEach((word, index) => {
+            wordsObject[`day${index + 1}`] = word;
+        });
+
+        await client.query(`
+            INSERT INTO month_words (month_name, words)
+            VALUES ($1, $2::json)
+            ON CONFLICT (month_name)
+            DO UPDATE SET words = $2::json;
+        `, [monthName, JSON.stringify(wordsObject)]);
         console.log(`Words for ${monthName} populated successfully!`);
     } catch (error) {
         console.error('Failed to populate words for the month!');
@@ -260,5 +285,19 @@ export const fetchWordOfTheDay = async () => {
     } catch (error) {
         console.error('Failed to fetch word of the day');
         console.error(error);
+    }
+};
+
+// FFunction to get words for a specific month
+export const fetchWordsForMonth = async (month) => {
+    try {
+        const result = await client.query(`
+            SELECT * FROM public.month_words
+            WHERE month_name = $1  
+        `, [month]);
+        return result.rows[0].words;
+
+    }catch (error) {
+        console.error('Failed to fetch the words for the month', error);
     }
 };
