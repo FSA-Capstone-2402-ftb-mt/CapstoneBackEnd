@@ -229,6 +229,7 @@ export const addWordToBank = async (word) => {
     } catch (error) {
         console.error('Failed to add word');
         console.error(error);
+        throw error;
     }
 };
 

@@ -10,7 +10,10 @@ router.post('/initialize', populateWordsPerMonth);
 router.put('/change', modifyWordOfTheDay);
 router.get('/month/current-month', getCurrentMonthWords);
 router.post('/add', addWord);
-router.delete('delete/:id', deleteWord);
+router.delete('/delete/:id', (req, res, next) => {
+    console.log('Delete route hit');
+    next();
+}, deleteWord);
 router.get('/wordOf/todaysWord', getWordOfTheDay);
 
 export default router;

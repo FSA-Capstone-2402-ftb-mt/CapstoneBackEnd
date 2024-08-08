@@ -87,6 +87,7 @@ export const modifyWordOfTheDay = async (req, res) => {
 // Function to add a new word to the word bank
 export const addWord = async (req, res) => {
     const { word } = req.body;
+    console.log('Received word:', word);
     try {
         await addWordToBank(word);
         res.status(201).send('Word added successfully');
