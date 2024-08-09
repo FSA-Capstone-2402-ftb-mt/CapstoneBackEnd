@@ -222,17 +222,30 @@ export const changeWordOfTheDay = async (monthName, day, newWord) => {
         }
 
         // Parse the current words JSON
-        const words = monthWords[0].words;
+        let words = monthWords[0].words;
 
         // Update the specific day's word
-        words[`day${day}`] = newWord;
+        let updated = false;
+        words = words.map(wordObj => {
+            const key = Object.keys(wordObj)[0];
+            if (key == day) { // Use '==' to compare strings and numbers
+                updated = true;
+                return { [key]: newWord };
+            }
+            return wordObj;
+        });
+
+        if (!updated) {
+            // If the specific day was not found, add it
+            words.push({ [day]: newWord });
+        }
 
         // Update the words in the database
         await client.query(`
             UPDATE month_words
             SET words = $1
             WHERE month_name = $2
-        `, [words, monthName]);
+        `, [JSON.stringify(words), monthName]);
 
         console.log('Word of the day updated successfully!');
     } catch (error) {
@@ -272,7 +285,7 @@ export const deleteWordFromBank = async (id) => {
 export const fetchWordOfTheDay = async () => {
     try {
         const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        let currentDate = new Date().getDate().toString(); 
+        let currentDate = new Date().getDate().toString();
 
         const index = currentDate - 1;
 

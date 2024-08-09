@@ -7,7 +7,7 @@ router.get('/all', getAllWords);
 router.get('/:id', getSingleWord);
 router.get('/random/:userId', getRandomWord);
 router.post('/initialize', populateWordsPerMonth);
-router.put('/change', modifyWordOfTheDay);
+router.put('/wordOf/change', modifyWordOfTheDay);
 router.get('/month/:month', getWordsForMonth);
 // router.get('/month/current-month', getCurrentMonthWords);
 router.post('/add', addWord);
