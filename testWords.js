@@ -99,7 +99,7 @@ const seedAllMonths = async () => {
         for (const { name, days } of months) {
             const wordsForMonth = [];
             for (let i = 0; i < days; i++) {
-                wordsForMonth.push(allWords[wordIndex]);
+                wordsForMonth.push(allWords[wordIndex].word); // Ensure only the word is used
                 wordIndex = (wordIndex + 1) % allWords.length; // Loop back to start if we run out of words
             }
             await seedMonthWithWords(name, wordsForMonth);

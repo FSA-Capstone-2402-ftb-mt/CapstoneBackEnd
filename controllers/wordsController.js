@@ -1,5 +1,5 @@
 import { client } from '../config/db.js';
-import { addWordToBank, changeWordOfTheDay, createMonthWordsTable, deleteWordFromBank, fetchAllWords, fetchCurrentMonthWords, fetchRandomWord, fetchSingleWord, fetchWordOfTheDay, fetchWordsForMonth, populateMonthWithWords } from '../models/words.js';
+import { addWordToBank, changeWordOfTheDay, createMonthWordsTable, deleteWordFromBank, fetchAllWords, fetchRandomWord, fetchSingleWord, fetchWordOfTheDay, fetchWordsForMonth, populateMonthWithWords } from '../models/words.js';
 
 // Function to export all the words
 export const getAllWords = async (req, res) => {
@@ -60,16 +60,17 @@ export const populateWordsPerMonth = async (req, res) => {
 };
 
 // Controller to get the current month's words
-export const getCurrentMonthWords = async (req, res) => {
-    try {
-        const words = await fetchCurrentMonthWords();
-        res.status(200).json(words);
-    } catch (error) {
-        res.status(500).json({
-            message: 'Failed to fetch words for the current month'
-        });
-    }
-};
+// export const getCurrentMonthWords = async (req, res) => {
+//     try {
+//         const words = await fetchCurrentMonthWords();
+//         res.status(200).json(words);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({
+//             message: 'Failed to fetch words for the current month'
+//         });
+//     }
+// };
 
 // Function to change the word of the day 
 export const modifyWordOfTheDay = async (req, res) => {
@@ -119,22 +120,17 @@ export const getWordOfTheDay = async (req, res) => {
     }
 };
 
-// Function to request specific words per month selected
 export const getWordsForMonth = async (req, res) => {
     const month = req.params.month;
     try {
-        const words = await fetchWordsForMonth(month);
+        const wordsData = await fetchWordsForMonth(month);
 
-        if (!words) {
+        if (!wordsData) {
             return res.status(404).send('No words for the specified month');
         }
 
-        const wordArray = Object.keys(words).map(day => ({
-            day: day.replace('day', ''),
-            word: words[day]
-        }));
-        res.json({month, words: wordArray});
-    }catch (error) {
+        res.json(wordsData);
+    } catch (error) {
         console.error('Failed to fetch words for the month', error);
         res.status(500).send('Failed to fetch words for the month');
     }

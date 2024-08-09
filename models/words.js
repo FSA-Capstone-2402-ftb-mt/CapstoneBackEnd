@@ -27,7 +27,7 @@ export const seedWords = async () => {
 export const fetchAllWords = async () => {
     try {
         const { rows: word_bank } = await client.query(`
-            SELECT word FROM public.word_bank
+            SELECT * FROM public.word_bank
         `);
         return word_bank;
     } catch (error) {
@@ -115,17 +115,16 @@ const fetchRandomWords = async (numWords) => {
 };
 
 // Function to populate words for the month
-export const populateMonthWithWords = async (monthName, usedWords) => {
+export const populateMonthWithWords = async (monthName) => {
     try {
         const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-        const randomWords = await fetchRandomWords(daysInMonth, usedWords);
+        const randomWords = await fetchRandomWords(daysInMonth);
 
-        // Create a JSON object with keys for each day
-        const wordsForMonth = {};
-        randomWords.forEach((word, index) => {
-            wordsForMonth[`day${index + 1}`] = word;
-            usedWords.add(word);
-        });
+        // Create an array of objects with "day" as key and "word" as value
+        const wordsForMonth = randomWords.map((word, index) => ({
+            day: (index + 1).toString(), // "1", "2", etc.
+            word: word
+        }));
 
         await client.query(`
             INSERT INTO month_words (month_name, words)
@@ -140,23 +139,20 @@ export const populateMonthWithWords = async (monthName, usedWords) => {
     }
 };
 
-// Function to opulate words for the month ensuring no duplicates across months
+// Function to populate words for the month ensuring no duplicates across months
 export const seedMonthWithWords = async (monthName, wordsForMonth) => {
     try {
-        const daysInMonth = wordsForMonth.length;
-
-        // Create a JSON object with keys for each day
-        const wordsObject = {};
-        wordsForMonth.forEach((word, index) => {
-            wordsObject[`day${index + 1}`] = word;
-        });
+        // Create an array of objects with "day" as key and "word" as value
+        const wordsArray = wordsForMonth.map((word, index) => ({
+            [index + 1]: word // {"1": "word1"}, {"2": "word2"}
+        }));
 
         await client.query(`
             INSERT INTO month_words (month_name, words)
             VALUES ($1, $2::json)
             ON CONFLICT (month_name)
             DO UPDATE SET words = $2::json;
-        `, [monthName, JSON.stringify(wordsObject)]);
+        `, [monthName, JSON.stringify(wordsArray)]);
         console.log(`Words for ${monthName} populated successfully!`);
     } catch (error) {
         console.error('Failed to populate words for the month!');
@@ -178,30 +174,31 @@ export const scheduleNextMonthWords = async () => {
 };
 
 // Function to fetch all current words of the month
-export const fetchCurrentMonthWords = async () => {
-    try {
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const { rows } = await client.query(`
-            SELECT words FROM month_words WHERE month_name = $1
-        `, [currentMonth]);
+// export const fetchCurrentMonthWords = async () => {
+//     try {
+//         const monthNames = [
+//             "January", "February", "March", "April", "May", "June",
+//             "July", "August", "September", "October", "November", "December"
+//         ];
+//         const currentMonth = monthNames[new Date().getMonth()];
+//         console.log('Generated Month Name:', currentMonth);
 
-        if (rows.length === 0) {
-            throw new Error('No words found for the current month');
-        }
+//         const result = await client.query(`
+//             SELECT words FROM month_words WHERE month_name = $1
+//         `, [currentMonth]);
 
-        const wordsJson = rows[0].words;
-        const wordsArray = Object.keys(wordsJson).map(day => ({
-            day: day.replace('day', ''), // Remove the 'day' prefix
-            word: wordsJson[day]
-        }));
+//         console.log('Query Result:', result.rows);
 
-        return { month: currentMonth, words: wordsArray };
-    } catch (error) {
-        console.error('Failed to get current month words!');
-        console.error(error);
-        throw error;
-    }
-};
+//         if (result.rows.length === 0) {
+//             throw new Error('No words found for the current month');
+//         }
+
+//         return result.rows[0].words;
+//     } catch (error) {
+//         console.error('Failed to get current month words!', error);
+//         throw error;
+//     }
+// };
 
 // Function to change the word of the day
 export const changeWordOfTheDay = async (monthName, day, newWord) => {
@@ -288,16 +285,23 @@ export const fetchWordOfTheDay = async () => {
     }
 };
 
-// FFunction to get words for a specific month
+// Function to fetch words for a specific month
 export const fetchWordsForMonth = async (month) => {
     try {
         const result = await client.query(`
-            SELECT * FROM public.month_words
-            WHERE month_name = $1  
+            SELECT words FROM month_words WHERE month_name = $1
         `, [month]);
-        return result.rows[0].words;
 
-    }catch (error) {
-        console.error('Failed to fetch the words for the month', error);
+        if (result.rows.length === 0) {
+            throw new Error('No words found for the specified month');
+        }
+
+        return {
+            month,
+            words: result.rows[0].words
+        };
+    } catch (error) {
+        console.error('Failed to fetch words for the month!');
+        throw error;
     }
 };
