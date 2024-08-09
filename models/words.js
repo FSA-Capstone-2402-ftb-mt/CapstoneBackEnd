@@ -144,7 +144,7 @@ export const seedMonthWithWords = async (monthName, wordsForMonth) => {
     try {
         // Create an array of objects with "day" as key and "word" as value
         const wordsArray = wordsForMonth.map((word, index) => ({
-            [index + 1]: word // {"1": "word1"}, {"2": "word2"}
+            [index + 1]: word
         }));
 
         await client.query(`
@@ -268,20 +268,25 @@ export const deleteWordFromBank = async (id) => {
     }
 };
 
+// Function to fetch word of the day
 export const fetchWordOfTheDay = async () => {
     try {
         const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const currentDate = new Date().getDate();
+        let currentDate = new Date().getDate().toString(); 
+
+        const index = currentDate - 1;
 
         const { rows } = await client.query(`
-            SELECT words->>$1 AS word_of_the_day
+            SELECT words->${index}->$1 AS todaysWord
             FROM month_words
             WHERE month_name = $2
-        `, [`day${currentDate}`, currentMonth]);
-        return rows[0].word_of_the_day;
+        `, [currentDate, currentMonth]);
+
+        return rows[0].todaysword;
     } catch (error) {
         console.error('Failed to fetch word of the day');
         console.error(error);
+        return "Error fetching word of the day";
     }
 };
 

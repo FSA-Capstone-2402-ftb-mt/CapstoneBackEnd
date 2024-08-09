@@ -111,8 +111,9 @@ export const deleteWord = async (req, res) => {
 // Function to get the word of the day
 export const getWordOfTheDay = async (req, res) => {
     try {
-        const wordOfTheDay = await fetchWordOfTheDay();
-        res.status(200).json({ word: wordOfTheDay });
+        const word = await fetchWordOfTheDay();
+        console.log('Fetched word:', word);
+        res.status(200).json({word});
     } catch (error) {
         res.status(500).json({
             message: 'Failed to fetch word of the day'
