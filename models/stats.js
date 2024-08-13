@@ -1,13 +1,13 @@
 import { client } from "../config/db.js";
 
 // Function to get user Stats
-export const getUserStats = async (userId) => {
+export const getUserStats = async (username) => {
     try {
         const { rows } = await client.query(`
             SELECT username, regular_score, timed_score, overall_score, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, overall_games, regular_games, timed_games, join_date
             FROM users
             WHERE id = $1
-        `, [userId]);
+        `, [username]);
         return rows[0];
     } catch (error) {
         console.error('Failed to get user stats', error);

@@ -2,9 +2,9 @@ import { getUserStats, getLeaderboardStats } from '../models/stats.js';
 
 // Controller to get user stats
 export const fetchUserStats = async (req, res) => {
-    const { userId } = req.params;
+    const { username } = req.params;
     try {
-        const userStats = await getUserStats(userId);
+        const userStats = await getUserStats(username);
         if (userStats) {
             res.status(200).json({
                 status: 'success',

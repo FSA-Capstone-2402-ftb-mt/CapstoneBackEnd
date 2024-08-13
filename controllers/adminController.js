@@ -1,4 +1,4 @@
-import { banUser, resetUserData, getAllUsers } from '../models/user.js';
+import { banUser, resetUserData, getAllUsers } from '../models/admin.js';
 
 // Controller to ban/unban user
 export const changeUserStatus = async (req, res) => {
