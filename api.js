@@ -6,6 +6,7 @@ import gameRoutes from "./routes/gameRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import wordsRoutes from "./routes/wordsRoutes.js";
+import friendsRoutes from "./routes/friendsRoutes.js";
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use("/game", gameRoutes);
 router.use("/stats", statsRoutes);
 router.use("/admin", adminRoutes);
 router.use("/words", wordsRoutes);
+router.use('/friends', friendsRoutes);
 
 export default router;
