@@ -13,9 +13,9 @@ export const seedUsers = async () => {
     await client.query(`
             DROP TABLE IF EXISTS users;
             CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(255) NOT NULL,
-                password VARCHAR(255) NOT NULL,
+                id SERIAL,
+                username VARCHAR(50) NOT NULL,
+                password VARCHAR(50) NOT NULL,
                 join_date TIMESTAMP DEFAULT NOW(),
                 is_admin BOOLEAN DEFAULT false,
                 is_banned BOOLEAN DEFAULT false,
@@ -33,7 +33,8 @@ export const seedUsers = async () => {
                 timed_games INTEGER DEFAULT 0,
                 current_streak INTEGER DEFAULT 0,
                 max_streak INTEGER DEFAULT 0,
-                used_words TEXT[] DEFAULT '{}'
+                used_words TEXT[] DEFAULT '{}',
+                PRIMARY KEY (username, id)
             );
 
             INSERT INTO users (username, password, is_admin)
@@ -41,10 +42,10 @@ export const seedUsers = async () => {
             ('EdwinV', '${secretPassword1}', true),
             ('AlbertoM', '${secretPassword2}', true),
             ('TylerS', '${secretPassword3}', true),
-            ('SlavikT', '${secretPassword4}', true)
+            ('SlavikT', '${secretPassword4}', true);
         `);
 
-    console.log("Admin Table seeded successfully!");
+    console.log("Users Table seeded successfully!");
   } catch (e) {
     console.error("Failed to seed Users Table!");
     console.error(e);

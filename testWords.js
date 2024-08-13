@@ -59,12 +59,12 @@ const testChangeWordOfTheDay = async (monthName, day, newWord) => {
 //     // await testFetchSingleWord(5); // Replace with a valid ID from your word_bank
 //     // await testFetchRandomWord(3); // Replace with a valid user ID
 //     // await testCreateMonthWordsTable();
-//     await testInitializeMonthWords();
+//     // await testInitializeMonthWords();
 //     // await testGetCurrentMonthWords();
 //     // await testChangeWordOfTheDay('July', 5, 'dread'); // Replace 'newword' with a valid word from word_bank
 // };
 
-// runTests();
+runTests();
 
 // Seed all months into DB
 
@@ -118,20 +118,20 @@ const testChangeWordOfTheDay = async (monthName, day, newWord) => {
 // seedAllMonths();
 
 
-const seedFriendsTable = async () => { 
-    try {
-        await connectDataBase(); // Establish a connection to the database
-        console.log('Connected to the DB');
+// const seedFriendsTable = async () => { 
+//     try {
+//         await connectDataBase(); // Establish a connection to the database
+//         console.log('Connected to the DB');
 
-        await seedFriendshipsTable(); // Call the function to seed the friendships table
-        console.log('Friendships table seeded successfully');
+//         await seedFriendshipsTable(); // Call the function to seed the friendships table
+//         console.log('Friendships table seeded successfully');
 
-    } catch (error) {
-        console.error('Error seeding the friendships table:', error);
-    } finally {
-        process.exit(); // Exit the process after seeding
-    }
-};
+//     } catch (error) {
+//         console.error('Error seeding the friendships table:', error);
+//     } finally {
+//         process.exit(); // Exit the process after seeding
+//     }
+// };
 
-// Call the function to seed the table
-seedFriendsTable();
+// // Call the function to seed the table
+// seedFriendsTable();
