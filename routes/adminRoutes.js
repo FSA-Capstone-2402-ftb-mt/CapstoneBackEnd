@@ -15,6 +15,6 @@ router.post("/status", verifyToken, checkAdmin, changeUserStatus);
 router.post("/reset", verifyToken, checkAdmin, resetUser);
 
 // Route to fetch all users
-router.get("/users", verifyToken, checkAdmin, fetchAllUsers);
+router.get("/all-users", verifyToken, checkAdmin, fetchAllUsers);
 
 export default router;

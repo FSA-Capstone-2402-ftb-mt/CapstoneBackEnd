@@ -1,7 +1,7 @@
 // Function to get all users
 export const getAllUsers = async () => {
   try {
-    const { rows } = await client.query("SELECT * FROM users");
+    const { rows } = await client.query(`SELECT * FROM users`);
     return rows;
   } catch (error) {
     console.error("Failed to get all users!", error);
