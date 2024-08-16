@@ -6,7 +6,7 @@ export const getUserStats = async (username) => {
         const { rows } = await client.query(`
             SELECT username, regular_score, timed_score, overall_score, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, overall_games, regular_games, timed_games, join_date
             FROM users
-            WHERE id = $1
+            WHERE username = $1
         `, [username]);
         return rows[0];
     } catch (error) {

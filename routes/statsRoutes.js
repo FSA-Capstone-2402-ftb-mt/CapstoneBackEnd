@@ -8,7 +8,7 @@ import { verifyToken } from "../utils/auth.js";
 const router = express.Router();
 
 // Route to get user stats
-router.get("/user/:userId", verifyToken, fetchUserStats);
+router.get("/user/:username", verifyToken, fetchUserStats);
 
 // Route to get leaderboard
 router.get("/leaderboard", verifyToken, fetchLeaderboard);
