@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.get("/all", getAllWords);
 router.get("/:id", getSingleWord);
-router.get("/random/:userId", getRandomWord);
+router.get("/random-word/:username", getRandomWord);
 router.post("/initialize", populateWordsPerMonth);
 router.put("/wordOf/change", modifyWordOfTheDay);
 router.get("/month/:month", getWordsForMonth);

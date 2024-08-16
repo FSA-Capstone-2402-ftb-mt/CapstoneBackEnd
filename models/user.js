@@ -13,26 +13,17 @@ export const seedUsers = async () => {
     await client.query(`
             DROP TABLE IF EXISTS users;
             CREATE TABLE IF NOT EXISTS users (
-                id SERIAL,
-                username VARCHAR(50) NOT NULL,
-                password VARCHAR(50) NOT NULL,
-                join_date TIMESTAMP DEFAULT NOW(),
+                id SERIAL UNIQUE,
+                username VARCHAR(20) NOT NULL UNIQUE,
+                password VARCHAR(128) NOT NULL,
                 is_admin BOOLEAN DEFAULT false,
                 is_banned BOOLEAN DEFAULT false,
-                overall_score INTEGER DEFAULT 0,
-                regular_score INTEGER DEFAULT 0,
                 timed_score INTEGER DEFAULT 0,
-                guess_1 INTEGER DEFAULT 0,
-                guess_2 INTEGER DEFAULT 0,
-                guess_3 INTEGER DEFAULT 0,
-                guess_4 INTEGER DEFAULT 0,
-                guess_5 INTEGER DEFAULT 0,
-                guess_6 INTEGER DEFAULT 0,
-                overall_games INTEGER DEFAULT 0,
-                regular_games INTEGER DEFAULT 0,
-                timed_games INTEGER DEFAULT 0,
                 current_streak INTEGER DEFAULT 0,
                 max_streak INTEGER DEFAULT 0,
+                guesses JSON NOT NULL DEFAULT '{"guess_1":"0", "guess_2":"0","guess_3":"0","guess_4":"0","guess_5":"0","guess_6":"0"}',
+                number_of_games JSON NOT NULL DEFAULT '{"overall_games":"0", "regular_games":"0", "timed_games":"0"}',
+                join_date TIMESTAMP DEFAULT NOW(),
                 used_words TEXT[] DEFAULT '{}',
                 PRIMARY KEY (username, id)
             );
@@ -106,7 +97,9 @@ export const fetchUserByUsername = async (username) => {
 // Function to get all users
 export const getAllUsers = async () => {
   try {
-    const { rows } = await client.query(`SELECT * FROM users`);
+    const { rows } = await client.query(`
+      SELECT * FROM users
+      `);
     return rows;
   } catch (error) {
     console.error("Failed to get all users!", error);

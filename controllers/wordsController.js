@@ -42,17 +42,18 @@ export const getSingleWord = async (req, res) => {
 
 // Function to fetch a random word
 export const getRandomWord = async (req, res) => {
-  const { userId } = req.params;
+  const { username } = req.params;
   try {
-    const word = await fetchRandomWord(userId);
+    const word = await fetchRandomWord(username);
+
     if (!word) {
-      return res.status(404).send("No words available");
+      return res.status(404).json({ message: "No words available" });
     }
-    res.status(200).json(word);
+
+    res.status(200).json({ word });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch random word",
-    });
+    console.error("Error fetching random word:", error);
+    res.status(500).json({ message: "Failed to fetch random word" }, error);
   }
 };
 
@@ -70,22 +71,17 @@ export const populateWordsPerMonth = async (req, res) => {
   }
 };
 
-// Controller to get the current month's words
-// export const getCurrentMonthWords = async (req, res) => {
-//     try {
-//         const words = await fetchCurrentMonthWords();
-//         res.status(200).json(words);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({
-//             message: 'Failed to fetch words for the current month'
-//         });
-//     }
-// };
-
 // Function to change the word of the day
 export const modifyWordOfTheDay = async (req, res) => {
+
   const { monthName, day, newWord } = req.body;
+
+  if (!monthName || !day || !newWord) {
+    return res.status(400).json({
+      message: "Missing required fields: monthName, day, and newWord are required."
+    });
+  }
+
   try {
     await changeWordOfTheDay(monthName, day, newWord);
     res.status(200).send("Word of the day was updated succesfully");

@@ -1,6 +1,7 @@
 import { seedWords, fetchAllWords, fetchSingleWord, fetchRandomWord, createMonthWordsTable, initializeMonthWords, changeWordOfTheDay, populateMonthWithWords, seedMonthWithWords } from './models/words.js';
 import { seedFriendshipsTable } from './models/friends.js';
 import { client, connectDataBase } from './config/db.js';
+import { seedWordsPerMonth } from './models/wordsCopy.js';
 
 // Initialize the database connection
 const initDB = async () => {
@@ -64,7 +65,7 @@ const testChangeWordOfTheDay = async (monthName, day, newWord) => {
 //     // await testChangeWordOfTheDay('July', 5, 'dread'); // Replace 'newword' with a valid word from word_bank
 // };
 
-runTests();
+// runTests();
 
 // Seed all months into DB
 
@@ -89,6 +90,8 @@ runTests();
 //         console.log('Connected to the database.');
 
 //         const allWords = await fetchAllWords();
+//         console.log('Fetched Words:', allWords);
+
 //         if (allWords.length === 0) {
 //             throw new Error('No words available to populate the months.');
 //         }
@@ -97,13 +100,24 @@ runTests();
 //         allWords.sort(() => 0.5 - Math.random());
 
 //         let wordIndex = 0;
+
 //         for (const { name, days } of months) {
-//             const wordsForMonth = [];
-//             for (let i = 0; i < days; i++) {
-//                 wordsForMonth.push(allWords[wordIndex].word); // Ensure only the word is used
-//                 wordIndex = (wordIndex + 1) % allWords.length; // Loop back to start if we run out of words
+//             const wordsForMonth = {};
+
+//             if (wordIndex + days > allWords.length) {
+//                 // If not enough words, reshuffle and start from the beginning
+//                 allWords.sort(() => 0.5 - Math.random());
+//                 wordIndex = 0; // Reset wordIndex after reshuffle
 //             }
-//             await seedMonthWithWords(name, wordsForMonth);
+
+//             for (let i = 0; i < days; i++) {
+//                 wordsForMonth[i + 1] = allWords[wordIndex].word; // Assign word to the corresponding day
+//                 wordIndex++;
+//             }
+
+//             console.log(`Seeding ${name}:`, wordsForMonth);
+
+//             await seedWordsPerMonth(name, wordsForMonth);
 //         }
 
 //         console.log('Database seeding for all months completed.');
@@ -114,24 +128,21 @@ runTests();
 //     }
 // };
 
-// // Run the seeding function
+
+// Run the seeding function
 // seedAllMonths();
 
 
-// const seedFriendsTable = async () => { 
-//     try {
-//         await connectDataBase(); // Establish a connection to the database
-//         console.log('Connected to the DB');
+const seedDatabase = async () => {
+    try {
+        await connectDataBase();
+        await seedFriendshipsTable();
 
-//         await seedFriendshipsTable(); // Call the function to seed the friendships table
-//         console.log('Friendships table seeded successfully');
+        console.log('Database seeding completed successfully!');
+    } catch (error) {
+        console.error('Failed to seed the database:', error);
+    }
+};
 
-//     } catch (error) {
-//         console.error('Error seeding the friendships table:', error);
-//     } finally {
-//         process.exit(); // Exit the process after seeding
-//     }
-// };
-
-// // Call the function to seed the table
-// seedFriendsTable();
+// Run the seeding process
+seedDatabase();

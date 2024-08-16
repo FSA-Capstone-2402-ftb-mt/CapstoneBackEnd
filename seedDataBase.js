@@ -6,12 +6,8 @@ const seedDataBase = async () => {
         await connectDataBase();
         await seedUsers();
         console.log('Database seeded successfully');
-        process.exit(0);
     } catch (error) {
         console.error('WHY? Bc:', error);
-        process.exit(1);
-    } finally {
-        client.end();
     }
 };
 

@@ -34,10 +34,10 @@ export const fetAllUsers = async (req, res) => {
 
 // Controller for fetching single user
 export const getSingleUser = async (req, res) => {
-  const { id } = req.params;
+  const { username } = req.params;
 
   // Check if the id is a valid integer
-  const userId = parseInt(id);
+  const userId = parseInt(username);
   if (isNaN(userId)) {
     return res.status(400).json({ message: "Invalid user ID" });
   }
