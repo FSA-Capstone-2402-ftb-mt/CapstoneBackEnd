@@ -1,3 +1,5 @@
+import { client } from "../config/db.js"
+
 // Function to get all users
 export const getAllUsers = async () => {
   try {
