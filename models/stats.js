@@ -4,7 +4,8 @@ import { client } from "../config/db.js";
 export const getUserStats = async (username) => {
     try {
         const { rows } = await client.query(`
-            SELECT username, regular_score, timed_score, overall_score, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, overall_games, regular_games, timed_games, join_date
+            SELECT username, regular_score, timed_score, overall_score, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, overall_games, regular_games, timed_games, join_date,
+            array_length(used_words, 1) AS words_solved
             FROM users
             WHERE username = $1
         `, [username]);
