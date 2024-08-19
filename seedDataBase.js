@@ -1,5 +1,5 @@
-import { seedUsers } from './models/user.js';
-import { connectDataBase } from './config/db.js';
+import {seedUsers} from './models/user.js';
+import {connectDataBase} from './config/db.js';
 
 const seedDataBase = async () => {
     try {

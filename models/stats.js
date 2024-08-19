@@ -1,10 +1,16 @@
-import { client } from "../config/db.js";
+import {client} from "../config/db.js";
 
 // Function to get user Stats
 export const getUserStats = async (username) => {
     try {
-        const { rows } = await client.query(`
-            SELECT username, regular_score, timed_score, overall_score, guess_1, guess_2, guess_3, guess_4, guess_5, guess_6, overall_games, regular_games, timed_games, join_date,
+        const {rows} = await client.query(`
+            SELECT username,
+                   timed_score,
+                   current_streak,
+                   max_streak,
+                   guesses,
+                   number_of_games,
+                   join_date,
                    COALESCE(array_length(used_words, 1), 0) AS word_count
             FROM users
             WHERE username = $1
@@ -19,11 +25,10 @@ export const getUserStats = async (username) => {
 // Function to get leaderboard stats
 export const getLeaderboardStats = async () => {
     try {
-        const { rows } = await client.query(`
-            SELECT username, regular_score, timed_score, overall_score
+        const {rows} = await client.query(`
+            SELECT username, timed_score
             FROM users
-            ORDER BY overall_score DESC
-            LIMIT 10
+            ORDER BY overall_score DESC LIMIT 10
         `);
         return rows;
     } catch (error) {

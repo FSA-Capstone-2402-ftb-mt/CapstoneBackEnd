@@ -1,8 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import cron from "node-cron";
-import { connectDataBase } from "./config/db.js";
+import {connectDataBase} from "./config/db.js";
 import api from "./api.js";
 
 dotenv.config();
@@ -14,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Server is Running");
+    res.send("Server is Running");
 });
 
 // Connect to the database
@@ -24,5 +23,5 @@ connectDataBase();
 app.use("/api", api);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

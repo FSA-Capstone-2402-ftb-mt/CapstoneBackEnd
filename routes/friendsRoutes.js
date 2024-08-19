@@ -1,6 +1,7 @@
 import express from "express";
 import {
   acceptFriendRequestController,
+  deleteFriendController,
   getFriendsController,
   rejectFriendRequestController,
   sendFriendRequestController,
@@ -9,15 +10,18 @@ import {
 const router = express.Router();
 
 // Route to send a friend request
-router.post("/request/send-request", sendFriendRequestController);
+router.post("/send-request", sendFriendRequestController);
 
 // Route to accept a friend request
-router.post("/request/accept-request", acceptFriendRequestController);
+router.post("/accept-request", acceptFriendRequestController);
 
 // Route to reject a friend request
-router.post("/request/reject-request", rejectFriendRequestController);
+router.post("/reject-request", rejectFriendRequestController);
 
 // Route to get a user's friends list
-router.get("/:userId/friends", getFriendsController);
+router.get("/:username/friends-list", getFriendsController);
+
+// Route to delete a friend
+router.delete('/delete-friend', deleteFriendController);
 
 export default router;

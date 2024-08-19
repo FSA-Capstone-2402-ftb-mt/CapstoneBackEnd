@@ -1,10 +1,6 @@
 import express from "express";
-import {
-  changeUserStatus,
-  resetUser,
-  fetchAllUsers,
-} from "../controllers/adminController.js";
-import { verifyToken, checkAdmin } from "../utils/auth.js";
+import {changeUserStatus, fetchAllUsers, resetUser,} from "../controllers/adminController.js";
+import {checkAdmin, verifyToken} from "../utils/auth.js";
 
 const router = express.Router();
 

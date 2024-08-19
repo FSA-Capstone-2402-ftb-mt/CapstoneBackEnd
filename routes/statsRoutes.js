@@ -1,9 +1,6 @@
 import express from "express";
-import {
-  fetchUserStats,
-  fetchLeaderboard,
-} from "../controllers/statsController.js";
-import { verifyToken } from "../utils/auth.js";
+import {fetchLeaderboard, fetchUserStats,} from "../controllers/statsController.js";
+import {verifyToken} from "../utils/auth.js";
 
 const router = express.Router();
 
