@@ -1,9 +1,9 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
+import pg from "pg";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const { Client } = pg;
+const {Client} = pg;
 
 let client;
 
@@ -15,19 +15,19 @@ const connectDataBase = async () => {
             password: process.env.DB_PASS,
             database: process.env.DB_NAME,
             port: process.env.DB_PORT,
-            ssl: { rejectUnauthorized: false }
+            ssl: {rejectUnauthorized: false},
         });
 
         try {
             //  Check if connected to DB
             await client.connect();
-            console.log('Connected to the PostgreSQL database.');
+            console.log("Connected to the PostgreSQL database.");
         } catch (err) {
-            console.error('Error connecting to the database:', err);
+            console.error("Error connecting to the database:", err);
         }
     } else {
-        console.log('Database client is already connected.');
+        console.log("Database client is already connected.");
     }
 };
 
-export { client, connectDataBase };
+export {client, connectDataBase};

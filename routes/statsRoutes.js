@@ -1,13 +1,13 @@
-import express from 'express';
-import { fetchUserStats, fetchLeaderboard } from '../controllers/statsController.js';
-import { verifyToken } from '../utils/auth.js';
+import express from "express";
+import {fetchLeaderboard, fetchUserStats,} from "../controllers/statsController.js";
+import {verifyToken} from "../utils/auth.js";
 
 const router = express.Router();
 
 // Route to get user stats
-router.get('/user/:userId', verifyToken, fetchUserStats);
+router.get("/user/:username", verifyToken, fetchUserStats);
 
 // Route to get leaderboard
-router.get('/leaderboard', verifyToken, fetchLeaderboard);
+router.get("/leaderboard", verifyToken, fetchLeaderboard);
 
 export default router;

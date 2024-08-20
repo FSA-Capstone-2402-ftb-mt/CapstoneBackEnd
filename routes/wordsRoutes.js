@@ -1,16 +1,31 @@
-import express from 'express';
-import { addWord, deleteWord, getAllWords, getCurrentMonthWords, getRandomWord, getSingleWord, getWordOfTheDay, modifyWordOfTheDay, populateWordsPerMonth } from '../controllers/wordsController.js';
+import express from "express";
+import {
+    addWord,
+    deleteWord,
+    getAllWords,
+    getRandomWord,
+    getSingleWord,
+    getWordOfTheDay,
+    getWordsForMonth,
+    modifyWordOfTheDay,
+} from "../controllers/wordsController.js";
 
 const router = express.Router();
 
-router.get('/all', getAllWords);
-router.get('/:id', getSingleWord);
-router.get('/random/:userId', getRandomWord);
-router.post('/initialize', populateWordsPerMonth);
-router.put('/change', modifyWordOfTheDay);
-router.get('/month/current-month', getCurrentMonthWords);
-router.post('/add', addWord);
-router.delete('delete/:id', deleteWord);
-router.get('/wordOf/todaysWord', getWordOfTheDay);
+router.get("/all", getAllWords);
+router.get("/:id", getSingleWord);
+router.get("/random-word/:username", getRandomWord);
+router.put("/wordOf/change", modifyWordOfTheDay);
+router.get("/month/:month", getWordsForMonth);
+router.post("/add", addWord);
+router.delete(
+    "/delete/:id",
+    (req, res, next) => {
+        console.log("Delete route hit");
+        next();
+    },
+    deleteWord
+);
+router.get("/wordOf/todaysWord", getWordOfTheDay);
 
 export default router;

@@ -20,7 +20,12 @@ export const calculateScore = (correctGuess, attempts, streak) => {
 };
 
 // Logic for Timed Game
-export const calculateTimedScore = (correctGuess, attempts, timeTaken, streak) => {
+export const calculateTimedScore = (
+    correctGuess,
+    attempts,
+    timeTaken,
+    streak
+) => {
     let score = 0;
 
     if (correctGuess) {
@@ -31,17 +36,23 @@ export const calculateTimedScore = (correctGuess, attempts, timeTaken, streak) =
         score += attemptBonus[attempts - 1] || 0;
 
         // Time based bonus
-        if (timeTaken <= 60) { // within 1 minute
+        if (timeTaken <= 60) {
+            // within 1 minute
             score += 50;
-        } else if (timeTaken <= 180) { // within 3 minutes
+        } else if (timeTaken <= 180) {
+            // within 3 minutes
             score += 40;
-        } else if (timeTaken <= 300) { // within 5 minutes
+        } else if (timeTaken <= 300) {
+            // within 5 minutes
             score += 30;
-        } else if (timeTaken <= 420) { // within 7 minutes
+        } else if (timeTaken <= 420) {
+            // within 7 minutes
             score += 20;
-        } else if (timeTaken <= 540) { // within 9 minutes
+        } else if (timeTaken <= 540) {
+            // within 9 minutes
             score += 10;
-        } else { // more than 10 minutes
+        } else {
+            // more than 10 minutes
             score += 0;
         }
 

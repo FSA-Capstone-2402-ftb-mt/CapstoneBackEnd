@@ -1,4 +1,4 @@
-import { client } from '../config/db.js';
+import {client} from "../config/db.js";
 
 // Seed Words table in database
 export const seedWords = async () => {
@@ -7,18 +7,15 @@ export const seedWords = async () => {
             DROP TABLE IF EXISTS word_bank;
             CREATE TABLE IF NOT EXISTS word_bank (
                 id SERIAL PRIMARY KEY,
-                word VARCHAR(5) NOT NULL
-            );
-            
+                word VARCHAR(5) NOT NULL);
             INSERT INTO word_bank (word)
-            VALUES 
-            ('cameo'),
-            ('adapt'),
-            ('drake');
+            VALUES ('cameo'),
+                   ('adapt'),
+                   ('drake');
         `);
-        console.log('Word Bank seeded Successfully!');
+        console.log("Word Bank seeded Successfully!");
     } catch (error) {
-        console.error('Failed to seed words table!');
+        console.error("Failed to seed words table!");
         console.error(error);
     }
 };
@@ -26,12 +23,13 @@ export const seedWords = async () => {
 // Function to get all words
 export const fetchAllWords = async () => {
     try {
-        const { rows: word_bank } = await client.query(`
-            SELECT * FROM public.word_bank
+        const {rows: word_bank} = await client.query(`
+            SELECT *
+            FROM public.word_bank
         `);
         return word_bank;
     } catch (error) {
-        console.error('Failed to get all Words!');
+        console.error("Failed to get all Words!");
         console.error(error);
     }
 };
@@ -39,37 +37,42 @@ export const fetchAllWords = async () => {
 // Function to get single word by Id
 export const fetchSingleWord = async (id) => {
     try {
-        const { rows } = await client.query(`
-            SELECT * FROM public.word_bank
+        const {rows} = await client.query(`
+            SELECT *
+            FROM public.word_bank
             WHERE id = $1
         `, [id]);
         return rows[0];
     } catch (error) {
-        console.error('Failed to get Word by Id!');
+        console.error("Failed to get Word by Id!");
         console.error(error);
     }
 };
 
 // Function to get a random word for a user without repetition
-export const fetchRandomWord = async (userId) => {
+export const fetchRandomWord = async (username) => {
     try {
         // Get the list of used words for the user
-        const { rows: usedWordsResult } = await client.query(`
-            SELECT used_words FROM users WHERE id = $1
-        `, [userId]);
+        const {rows: usedWordsResult} = await client.query(`
+            SELECT used_words
+            FROM users
+            WHERE username = $1
+        `, [username]);
 
+        // Ensure we have an array to work with, even if no used words are found
         const usedWords = usedWordsResult[0]?.used_words || [];
 
         // Get a random word from the word_bank that is not in the used words list
-        const { rows: randomWordResult } = await client.query(`
-            SELECT word FROM word_bank
+        const {rows: randomWordResult} = await client.query(`
+            SELECT word
+            FROM word_bank
             WHERE word NOT IN (SELECT unnest($1::text[]))
-            ORDER BY RANDOM()
-            LIMIT 1
+            ORDER BY RANDOM() LIMIT 1
         `, [usedWords]);
 
+        // Check if any word was found
         if (randomWordResult.length === 0) {
-            throw new Error('No more words available');
+            throw new Error("No more words available");
         }
 
         const randomWord = randomWordResult[0].word;
@@ -78,103 +81,34 @@ export const fetchRandomWord = async (userId) => {
         await client.query(`
             UPDATE users
             SET used_words = array_append(used_words, $1)
-            WHERE id = $2
-        `, [randomWord, userId]);
+            WHERE username = $2
+        `, [randomWord, username]);
 
         return randomWord;
     } catch (error) {
-        console.error('Failed to fetch random word!');
+        console.error("Failed to fetch random word!");
         console.error(error);
     }
 };
 
-// Function to create month_words table if it doesn't exist
-export const createMonthWordsTable = async () => {
+// Function to populate words for the month ensuring no duplicates across months
+export const seedMonthWithWords = async (monthName, wordsForMonth) => {
     try {
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS month_words (
-                month_name VARCHAR(50) PRIMARY KEY,
-                words TEXT[]
-            );
-        `);
-        console.log('Month words table created successfully!');
-    } catch (error) {
-        console.error('Failed to create month words table!');
-        console.error(error);
-    }
-};
-
-// Function to fetch random words from word_bank
-const fetchRandomWords = async (numWords) => {
-    const { rows } = await client.query(`
-        SELECT word FROM word_bank
-        ORDER BY RANDOM()
-        LIMIT $1
-    `, [numWords]);
-    return rows.map(row => row.word);
-};
-
-// Function to populate words for the month
-export const populateMonthWithWords = async (monthName) => {
-    try {
-        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-        const randomWords = await fetchRandomWords(daysInMonth);
-
-        // Create a JSON object with keys for each day
-        const wordsForMonth = {};
-        randomWords.forEach((word, index) => {
-            wordsForMonth[`day${index + 1}`] = word;
-        });
+        // Create an array of objects with "day" as key and "word" as value
+        const wordsArray = wordsForMonth.map((word, index) => ({
+            [index + 1]: word,
+        }));
 
         await client.query(`
             INSERT INTO month_words (month_name, words)
-            VALUES ($1, $2::json)
-            ON CONFLICT (month_name)
-            DO UPDATE SET words = $2::json;
-        `, [monthName, JSON.stringify(wordsForMonth)]);
+            VALUES ($1, $2::json) ON CONFLICT (month_name)
+            DO
+            UPDATE SET words = $2::json;
+        `, [monthName, JSON.stringify(wordsArray)]);
         console.log(`Words for ${monthName} populated successfully!`);
     } catch (error) {
-        console.error('Failed to populate words for the month!');
+        console.error("Failed to populate words for the month!");
         console.error(error);
-    }
-};
-
-// Function to initialize the current month words
-export const initializeMonthWords = async () => {
-    await createMonthWordsTable();
-    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-    await populateMonthWithWords(currentMonth);
-};
-
-// Schedule job to populate words for the next month
-export const scheduleNextMonthWords = async () => {
-    const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleString('default', { month: 'long' });
-    await populateMonthWithWords(nextMonth);
-};
-
-// Function to fetch all current words of the month
-export const fetchCurrentMonthWords = async () => {
-    try {
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const { rows } = await client.query(`
-            SELECT words FROM month_words WHERE month_name = $1
-        `, [currentMonth]);
-
-        if (rows.length === 0) {
-            throw new Error('No words found for the current month');
-        }
-
-        const wordsJson = rows[0].words;
-        const wordsArray = Object.keys(wordsJson).map(day => ({
-            day: day.replace('day', ''), // Remove the 'day' prefix
-            word: wordsJson[day]
-        }));
-
-        return { month: currentMonth, words: wordsArray };
-    } catch (error) {
-        console.error('Failed to get current month words!');
-        console.error(error);
-        throw error;
     }
 };
 
@@ -182,40 +116,47 @@ export const fetchCurrentMonthWords = async () => {
 export const changeWordOfTheDay = async (monthName, day, newWord) => {
     try {
         // Ensure the new word exists in the word bank
-        const { rows: wordCheck } = await client.query(`
-            SELECT * FROM word_bank WHERE word = $1
+        const {rows: wordCheck} = await client.query(`
+            SELECT *
+            FROM word_bank
+            WHERE word = $1
         `, [newWord]);
 
         if (wordCheck.length === 0) {
-            throw new Error('Word does not exist in the word bank');
+            throw new Error("Word does not exist in the word bank");
         }
 
         // Fetch the current month's words
-        const { rows: monthWords } = await client.query(`
-            SELECT words FROM month_words WHERE month_name = $1
+        const {rows: monthWords} = await client.query(`
+            SELECT words
+            FROM month_words
+            WHERE month_name = $1
         `, [monthName]);
 
         if (monthWords.length === 0) {
-            throw new Error('Month not found');
+            throw new Error("Month not found");
         }
 
         // Parse the current words JSON
-        const words = monthWords[0].words;
+        let words = monthWords[0].words;
 
         // Update the specific day's word
-        words[`day${day}`] = newWord;
+        if (!words.hasOwnProperty(day)) {
+            throw new Error(`Day ${day} does not exist in the words data for ${monthName}`);
+        }
+
+        words[day] = newWord; // Directly update the word for the specified day
 
         // Update the words in the database
         await client.query(`
             UPDATE month_words
             SET words = $1
             WHERE month_name = $2
-        `, [words, monthName]);
+        `, [JSON.stringify(words), monthName]);
 
-        console.log('Word of the day updated successfully!');
+        console.log("Word of the day updated successfully!");
     } catch (error) {
-        console.error('Failed to update word of the day!');
-        console.error(error);
+        console.error("Failed to update word of the day!", error);
     }
 };
 
@@ -227,8 +168,9 @@ export const addWordToBank = async (word) => {
             VALUES ($1)
         `, [word]);
     } catch (error) {
-        console.error('Failed to add word');
+        console.error("Failed to add word");
         console.error(error);
+        throw error;
     }
 };
 
@@ -236,28 +178,54 @@ export const addWordToBank = async (word) => {
 export const deleteWordFromBank = async (id) => {
     try {
         await client.query(`
-            DELETE FROM word_bank
+            DELETE
+            FROM word_bank
             WHERE id = $1
         `, [id]);
     } catch (error) {
-        console.error('Failed to delete word');
+        console.error("Failed to delete word");
         console.error(error);
     }
 };
 
+// Function to fetch word of the day
 export const fetchWordOfTheDay = async () => {
     try {
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const currentDate = new Date().getDate();
+        const currentMonth = new Date().toLocaleString("default", {month: "long"});
+        let currentDate = new Date().getDate().toString();
 
-        const { rows } = await client.query(`
-            SELECT words->>$1 AS word_of_the_day
+        const {rows} = await client.query(`
+            SELECT words ->> $1 AS todaysWord
             FROM month_words
             WHERE month_name = $2
-        `, [`day${currentDate}`, currentMonth]);
-        return rows[0].word_of_the_day;
+        `, [currentDate, currentMonth]);
+
+        return rows[0].todaysword;
     } catch (error) {
-        console.error('Failed to fetch word of the day');
+        console.error("Failed to fetch word of the day");
         console.error(error);
+        return "Error fetching word of the day";
+    }
+};
+
+// Function to fetch words for a specific month
+export const fetchWordsForMonth = async (month) => {
+    try {
+        const result = await client.query(`
+            SELECT words
+            FROM month_words
+            WHERE month_name = $1
+        `, [month]);
+
+        if (result.rows.length === 0) {
+            throw new Error("No words found for the specified month");
+        }
+
+        return {
+            month, words: result.rows[0].words,
+        };
+    } catch (error) {
+        console.error("Failed to fetch words for the month!");
+        throw error;
     }
 };

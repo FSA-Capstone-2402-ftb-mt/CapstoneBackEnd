@@ -1,10 +1,11 @@
-import express from 'express';
-import { getLeaderboard } from '../controllers/leaderboardController.js';
-import { verifyToken } from '../utils/auth.js';
+import express from "express";
+import {combinedLeaderboard} from "../controllers/leaderboardController.js";
 
 const router = express.Router();
 
-// Route to get leaderboard
-router.get('/', verifyToken, getLeaderboard);
+// Route to get leaderboard for timed scored
+router.get("/", combinedLeaderboard);
+// Route for current streak
+
 
 export default router;
