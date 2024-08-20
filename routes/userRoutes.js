@@ -1,20 +1,12 @@
 import express from "express";
-import {
-    changePassword,
-    changeUsername,
-    createUser,
-    fetAllUsers,
-    getSingleUser,
-    loginUser,
-} from "../controllers/userController.js";
+import {changePassword, changeUsername, createUser, getSingleUser, loginUser,} from "../controllers/userController.js";
 import {verifyToken} from "../utils/auth.js";
+import {resetUser} from "../controllers/adminController.js";
 
 const router = express.Router();
 
 // User routes
 
-// Fetch all users
-router.get("/", verifyToken, fetAllUsers);
 // Register user
 router.post("/register", createUser);
 // Login
@@ -25,5 +17,7 @@ router.get("/:username", verifyToken, getSingleUser);
 router.put('/update-username', verifyToken, changeUsername);
 // Update password
 router.put("/update-password", verifyToken, changePassword);
+// Reset user stats (per user request)
+router.post("/reset", verifyToken, resetUser);
 
 export default router;

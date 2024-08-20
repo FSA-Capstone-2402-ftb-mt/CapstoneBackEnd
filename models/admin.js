@@ -3,9 +3,14 @@ import {client} from "../config/db.js"
 // Function to get all users
 export const getAllUsers = async () => {
     try {
-        const {rows} = await client.query(`SELECT *
-                                           FROM users`);
-        return rows[0];
+        const {rows} = await client.query(
+            `
+                SELECT *
+                FROM public.users
+                ORDER BY id ASC;
+            `
+        );
+        return rows;
     } catch (error) {
         console.error("Failed to get all users!", error);
         throw error;
@@ -20,8 +25,8 @@ export const banUser = async (userId, isBanned) => {
                 UPDATE users
                 SET is_banned = $1
                 WHERE id = $2 RETURNING *;
-            `,
-            [isBanned, userId]
+            `
+            , [isBanned, userId]
         );
         return rows[0];
     } catch (error) {
@@ -30,7 +35,7 @@ export const banUser = async (userId, isBanned) => {
     }
 };
 
-export const resetUserData = async (userId) => {
+export const resetUserData = async (username) => {
     try {
         const result = await client.query(
             `
@@ -43,7 +48,7 @@ export const resetUserData = async (userId) => {
                     used_words      = DEFAULT
                 WHERE id = $1 RETURNING *;
             `,
-            [userId]
+            [username]
         );
         return result.rows[0];
     } catch (error) {
