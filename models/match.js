@@ -6,10 +6,12 @@ export const seedMatches = async () => {
     try {
         await client.query(
             `
-                CREATE TABLE IF NOT EXISTS match_results
+                CREATE TABLE IF NOT EXISTS matchmaking
                 (
                     id
-                    SERIAL,
+                    SERIAL
+                    PRIMARY
+                    KEY,
                     player1_username
                     VARCHAR
                 (
@@ -26,22 +28,11 @@ export const seedMatches = async () => {
                     username
                 )
                   ON DELETE CASCADE,
-                    score JSON NOT NULL DEFAULT '[
-                            {"username1": "username1", "wins": "0"},
-                            {"username2": "username2", "wins": "0"}
-                        ]'::json,
-                    guesses JSON NOT NULL DEFAULT '{
-                            "username1": {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0},
-                            "username2": {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0}
-                        }'::json,
-                    used_words TEXT[] NOT NULL,
-                    PRIMARY KEY
-                (
-                    id,
-                    player1_username,
-                    player2_username
-                )
+                    scores JSON NOT NULL DEFAULT '{}'::json,
+                    guesses JSON NOT NULL DEFAULT '{}'::json,
+                    used_words TEXT[] DEFAULT '{}'
                     );
+
             `
         );
         console.log("Matches table seeded successfully!");
@@ -51,18 +42,24 @@ export const seedMatches = async () => {
 };
 
 // Initialize matches for friends
-export const startFighting = async (user1Username, user2username) => {
+export const startFighting = async (user_username, friend_username) => {
     try {
         await client.query(
             `
-                INSERT INTO match_results (player1_username, player2_username)
-                VALUES ($1, $2);
+                INSERT INTO matchmaking (player1_username, player2_username, scores, guesses)
+                VALUES ($1::text,
+                        $2::text,
+                        json_build_object($1::text, 0, $2::text, 0),
+                        json_build_object(
+                                $1::text, json_build_object('1', 0, '2', 0, '3', 0, '4', 0, '5', 0, '6', 0),
+                                $2::text, json_build_object('1', 0, '2', 0, '3', 0, '4', 0, '5', 0, '6', 0)
+                        ));
             `,
-            [user1Username, user2username]
+            [user_username, friend_username]
         );
         console.log("Friendship Destroyer was created");
     } catch (error) {
-        console.error("Failed to destroy friendships");
+        console.error("Failed to destroy friendships", error);
     }
 };
 
@@ -91,9 +88,10 @@ export const endPvPGame = async (
     word
 ) => {
     try {
+        // Fetch existing match data
         const { rows: matchRows } = await client.query(
             `
-                SELECT score, guesses, used_words FROM match_results
+                SELECT scores, guesses, used_words FROM matchmaking
                 WHERE (player1_username = $1 AND player2_username = $2)
                    OR (player1_username = $2 AND player2_username = $1)
             `,
@@ -113,13 +111,13 @@ export const endPvPGame = async (
         // Update score for the winner
         if (winner) {
             if (winner === player1Username) {
-                matchData.score[player1Username].wins += 1;
+                matchData.scores[player1Username] += 1;
             } else if (winner === player2Username) {
-                matchData.score[player2Username].wins += 1;
+                matchData.scores[player2Username] += 1;
             }
         } else {
             // Handle ties if needed
-            matchData.ties = (matchData.ties || 0) + 1;
+            matchData.scores.ties = (matchData.scores.ties || 0) + 1;
         }
 
         // Ensure the word is valid before adding to used_words
@@ -133,17 +131,17 @@ export const endPvPGame = async (
         // Update the database
         const { rows } = await client.query(
             `
-            UPDATE match_results
-            SET score = $1::json,
-                guesses = $2::json,
-                used_words = $3::text[]
-            WHERE player1_username = $4 AND player2_username = $5
-               OR player1_username = $5 AND player2_username = $4
-            RETURNING *;
+                UPDATE matchmaking
+                SET scores = $1::jsonb,
+                guesses = $2::jsonb,
+                    used_words = $3::text[]
+                WHERE (player1_username = $4 AND player2_username = $5)
+                   OR (player1_username = $5 AND player2_username = $4)
+                    RETURNING *;
             `,
             [
-                JSON.stringify(matchData.score),
-                JSON.stringify(matchData.guesses),
+                matchData.scores,
+                matchData.guesses,
                 updatedUsedWords,
                 player1Username,
                 player2Username,

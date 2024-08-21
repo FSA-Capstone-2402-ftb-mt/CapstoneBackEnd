@@ -94,13 +94,12 @@ export const acceptFriendRequest = async (user_username, friend_username) => {
             [friend_username, user_username]
         );
 
-        if (rows.length === 0) {
-            console.error("No friend request found to accept");
-            return null; // Return null to indicate no friend request was found
-        }
-
         // Will insert the default for 1v1s
         await startFighting(user_username, friend_username);
+
+        if (rows.length === 0) {
+            console.error("No friend request found to accept");
+        }
 
         return rows[0];
     } catch (error) {
