@@ -1,17 +1,40 @@
 import {client} from "../config/db.js";
+import {startFighting} from "./match.js";
 
 // seed database with friendships table
 export const seedFriendshipsTable = async () => {
     try {
         await client.query(
             `
-                CREATE TABLE IF NOT EXISTS friendships (
-                    user_username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
-                    friend_username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
-                    status VARCHAR(20) NOT NULL,
+                CREATE TABLE IF NOT EXISTS friendships
+                (
+                    user_username
+                    VARCHAR
+                (
+                    255
+                ) REFERENCES users
+                (
+                    username
+                ) ON DELETE CASCADE,
+                    friend_username VARCHAR
+                (
+                    255
+                ) REFERENCES users
+                (
+                    username
+                )
+                  ON DELETE CASCADE,
+                    status VARCHAR
+                (
+                    20
+                ) NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (user_username, friend_username)
-                );
+                    PRIMARY KEY
+                (
+                    user_username,
+                    friend_username
+                )
+                    );
             `
         );
 
@@ -66,8 +89,7 @@ export const acceptFriendRequest = async (user_username, friend_username) => {
                 UPDATE friendships
                 SET status = 'accepted'
                 WHERE (user_username = $1 AND friend_username = $2)
-                   OR (user_username = $2 AND friend_username = $1)
-                    RETURNING *
+                   OR (user_username = $2 AND friend_username = $1) RETURNING *
             `,
             [friend_username, user_username]
         );
@@ -76,6 +98,9 @@ export const acceptFriendRequest = async (user_username, friend_username) => {
             console.error("No friend request found to accept");
             return null; // Return null to indicate no friend request was found
         }
+
+        // Will insert the default for 1v1s
+        await startFighting(user_username, friend_username);
 
         return rows[0];
     } catch (error) {
@@ -93,8 +118,7 @@ export const rejectFriendRequest = async (user_username, friend_username) => {
                 UPDATE friendships
                 SET status = 'rejected'
                 WHERE (user_username = $1 AND friend_username = $2)
-                   OR (user_username = $2 AND friend_username = $1)
-                    RETURNING *
+                   OR (user_username = $2 AND friend_username = $1) RETURNING *
             `,
             [friend_username, user_username]
         );
@@ -114,7 +138,7 @@ export const rejectFriendRequest = async (user_username, friend_username) => {
 // Function to get a user's friends
 export const getFriends = async (username) => {
     try {
-        const { rows } = await client.query(
+        const {rows} = await client.query(
             `
                 SELECT u.username AS friend, f.created_at AS since
                 FROM friendships f
@@ -138,10 +162,10 @@ export const deleteFriend = async (user_username, friend_username) => {
     try {
         const {rows} = await client.query(
             `
-                DELETE FROM friendships
+                DELETE
+                FROM friendships
                 WHERE (user_username = $1 AND friend_username = $2)
-                   OR (user_username = $2 AND friend_username = $1)
-                RETURNING *
+                   OR (user_username = $2 AND friend_username = $1) RETURNING *
             `,
             [user_username, friend_username]
         );
@@ -155,5 +179,24 @@ export const deleteFriend = async (user_username, friend_username) => {
     } catch (error) {
         console.error("Failed to delete friend!", error);
         throw error;
+    }
+};
+
+// Function to check if players are friends
+export const areFriends = async (username1, username2) => {
+    try {
+        const {rows} = await client.query(
+            `
+                SELECT 1
+                FROM friendships
+                WHERE (user_username = $1 AND friend_username = $2 AND status = 'accepted')
+                   OR (user_username = $2 AND friend_username = $1 AND status = 'accepted')
+            `,
+            [username1, username2]
+        );
+
+        return rows.length > 0;
+    } catch (error) {
+        console.error("Failed to check friendship status", error);
     }
 };

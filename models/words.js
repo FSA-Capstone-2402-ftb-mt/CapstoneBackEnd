@@ -229,3 +229,32 @@ export const fetchWordsForMonth = async (month) => {
         throw error;
     }
 };
+
+// Function to fetch a random word that hasn't been used yet for PvP
+export const fetchUnusedRandomWord = async (player1Username, player2Username) => {
+    try {
+        const { rows } = await client.query(
+            `
+            SELECT word FROM word_bank
+            WHERE word <> ALL(
+                SELECT COALESCE(array_agg(used_words), '{}')
+                FROM match_results
+                WHERE (player1_username = $1 AND player2_username = $2)
+                   OR (player1_username = $2 AND player2_username = $1)
+            )
+            ORDER BY RANDOM()
+            LIMIT 1
+            `,
+            [player1Username, player2Username]
+        );
+
+        if (rows.length === 0) {
+            throw new Error("No unused words available for these players");
+        }
+
+        return rows[0].word;
+    } catch (error) {
+        console.error("Failed to fetch an unused random word:", error);
+        throw error;
+    }
+};
