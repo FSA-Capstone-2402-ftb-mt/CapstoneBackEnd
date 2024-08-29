@@ -3,7 +3,7 @@ import {updateRegularGameScore, updateTimedGameScore} from "../models/game.js";
 // Controller to handle the end of a regular game
 export const endRegularGame = async (req, res) => {
     const {username, correctGuess, attempts, word} = req.body;
-
+    console.log(req.body)
     try {
         const updatedUser = await updateRegularGameScore(
             username,

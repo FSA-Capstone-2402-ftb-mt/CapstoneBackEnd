@@ -20,12 +20,17 @@ export const updateRegularGameScore = async (
         );
 
         const user = userRows[0];
+        console.log(user);
         let currentStreak = user.current_streak;
         let maxStreak = user.max_streak;
 
         if (correctGuess) {
             currentStreak += 1;
             maxStreak = Math.max(maxStreak, currentStreak);
+            const updatedGuesses = {
+                ...user.guesses,
+                [`guess_${attempts}`]: parseInt(user.guesses[`guess_${attempts}`]) + 1,
+            };
         } else {
             currentStreak = 0;
         }
@@ -36,14 +41,10 @@ export const updateRegularGameScore = async (
             regular_games: parseInt(user.number_of_games.regular_games) + 1,
         };
 
-        const updatedGuesses = {
-            ...user.guesses,
-            [`guess_${attempts}`]: parseInt(user.guesses[`guess_${attempts}`]) + 1,
-        };
 
         // Ensure the word is valid before adding to used_words
         const usedWordsSet = new Set(user.used_words || []);
-        if (word && word.trim()) {
+        if (word) {
             console.log(word);
             usedWordsSet.add(word);
         }
