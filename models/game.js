@@ -138,7 +138,7 @@ export const updateTimedGameScore = async (
                 SET
                     timed_score = timed_score + $1,
                     number_of_games = $2::json,
-                guesses = $3::json,
+                    guesses = $3::json,
                     current_streak = $4,
                     max_streak = $5,
                     used_words = $6::text[]
