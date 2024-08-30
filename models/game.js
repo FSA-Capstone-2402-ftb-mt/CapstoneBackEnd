@@ -6,8 +6,7 @@ export const updateRegularGameScore = async (
     username,
     correctGuess,
     attempts,
-    word,
-    last_played
+    word
 ) => {
     try {
         console.log("stuff", word);
