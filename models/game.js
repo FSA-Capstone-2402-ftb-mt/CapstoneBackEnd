@@ -6,7 +6,8 @@ export const updateRegularGameScore = async (
     username,
     correctGuess,
     attempts,
-    word
+    word,
+    last_played
 ) => {
     try {
         console.log("stuff", word);
@@ -20,18 +21,16 @@ export const updateRegularGameScore = async (
         );
 
         const user = userRows[0];
-        console.log(user);
+        // console.log(user);
         let currentStreak = user.current_streak;
         let maxStreak = user.max_streak;
+        const updatedGuesses = {...user.guesses}
 
         if (correctGuess) {
             currentStreak += 1;
             maxStreak = Math.max(maxStreak, currentStreak);
-            const updatedGuesses = {
-                ...user.guesses,
-                [`guess_${attempts}`]: parseInt(user.guesses[`guess_${attempts}`]) + 1,
-            };
-        } else {
+            updatedGuesses [`guess_${attempts}`] = parseInt(user.guesses[`guess_${attempts}`]) + 1
+        }else {
             currentStreak = 0;
         }
 
