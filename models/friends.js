@@ -83,6 +83,7 @@ export const sendFriendRequest = async (user_username, friend_username) => {
 // Function to accept a friend request
 export const acceptFriendRequest = async (user_username, friend_username) => {
     try {
+
         // Update the friendship status to accepted
         const {rows} = await client.query(
             `
@@ -197,5 +198,54 @@ export const areFriends = async (username1, username2) => {
         return rows.length > 0;
     } catch (error) {
         console.error("Failed to check friendship status", error);
+    }
+};
+
+// Function to get all current Friend requests by username (received and sent)
+export const fetchRequests = async (username) => {
+    try {
+        const {rows} = await client.query(
+            `
+                SELECT CASE
+                           WHEN user_username = $1 THEN 'sent'
+                           WHEN friend_username = $1 THEN 'received'
+                           END AS request_type,
+                       user_username,
+                       friend_username,
+                       status,
+                       created_at
+                FROM friendships
+                WHERE user_username = $1
+                   OR friend_username = $1;
+            `,
+            [username]
+        );
+        return rows;
+    } catch (error) {
+        console.error("Failed to fetch requests", error);
+    }
+}
+//  Function to delete a rejected friend request
+export const deleteRejectedRequest = async (user_username, friend_username) => {
+    try {
+        const {rows} = await client.query(
+            `
+                DELETE
+                FROM friendships
+                WHERE (user_username = $1 AND friend_username = $2 AND status = 'rejected')
+                   OR (user_username = $2 AND friend_username = $1 AND status = 'rejected') RETURNING *
+            `,
+            [user_username, friend_username]
+        );
+
+        if (rows.length === 0) {
+            console.error("No rejected request found to delete");
+            return null; // Return null if no rejected request was found
+        }
+
+        return rows[0]; // Return the deleted request details
+    } catch (error) {
+        console.error("Failed to delete rejected request!", error);
+        throw error;
     }
 };

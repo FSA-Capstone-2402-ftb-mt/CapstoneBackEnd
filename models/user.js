@@ -51,13 +51,27 @@ export const registerUser = async ({username, email, password}) => {
     try {
         const encryptedPassword = await bcrypt.hash(password, salt_count);
         const join_date = new Date();
+
+        // Insert the new user into the users table
         const {rows} = await client.query(
             `
-                INSERT INTO users (username, password, email, join_date, is_admin, is_banned)
-                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
-            `
-            , [username, email, encryptedPassword, join_date, false, false]
+                INSERT INTO users (username, email, password, join_date, is_admin, is_banned)
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username;
+            `,
+            [username, email, encryptedPassword, join_date, false, false]
         );
+
+        // Get the user's ID from the insertion result
+        const userId = rows[0].id;
+
+        await client.query(
+            `
+                INSERT INTO game_save (id, username)
+                VALUES ($1, $2);
+            `,
+            [userId, username]
+        );
+
         return rows[0];
     } catch (e) {
         console.error("Failed to register user!");
@@ -89,8 +103,8 @@ export const updateUsername = async (currentUsername, newUsername) => {
         const {rows} = await client.query(
             `
                 UPDATE users
-                SET username = $1
-                WHERE username = $2
+                SET username = $2
+                WHERE username = $1
             `
             , [currentUsername, newUsername]
         );
@@ -108,7 +122,7 @@ export const updatePassword = async (username, newPassword) => {
             `
                 UPDATE users
                 SET password = $2
-                WHERE username = $1 RETURNING *;
+                WHERE username = $1
             `
             , [username, encryptedPassword]
         );

@@ -1,9 +1,10 @@
-import {updateRegularGameScore, updateTimedGameScore} from "../models/game.js";
+import {fetchDataGame, updateDataGame, updateRegularGameScore, updateTimedGameScore} from "../models/game.js";
+import req from "express/lib/request.js";
+import res from "express/lib/response.js";
 
 // Controller to handle the end of a regular game
 export const endRegularGame = async (req, res) => {
     const {username, correctGuess, attempts, word} = req.body;
-    console.log(req.body)
     try {
         const updatedUser = await updateRegularGameScore(
             username,
@@ -46,5 +47,28 @@ export const endTimedGame = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({message: "Failed to end timed game"});
+    }
+};
+
+// Controller to fetch Save Data
+export const getGameData = async (req, res) => {
+    const {username} = req.params;
+    try {
+        const gameData = await fetchDataGame(username);
+        res.status(200).json(gameData);
+    } catch (error) {
+        res.status(500).json({message: "Failed to get game data"});
+    }
+};
+
+// Controller to update Save Data
+export const updateGameDataController = async (req, res) => {
+    const {username} = req.params;
+    const {last_played} = req.body;
+    try {
+        const gameData = await updateDataGame(username, last_played);
+        res.status(200).json(gameData);
+    }catch(error) {
+        res.status(500).json({message: error});
     }
 };

@@ -41,9 +41,10 @@ export const loginUser = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({message: "Invalid username or password"});
         }
+        const admin = user.is_admin
 
         const token = generateToken(user);
-        res.status(200).json({message: "Login successful", token});
+        res.status(200).json({message: "Login successful", token, admin});
     } catch (error) {
         res.status(500).json({message: "Failed to Log In"});
     }
