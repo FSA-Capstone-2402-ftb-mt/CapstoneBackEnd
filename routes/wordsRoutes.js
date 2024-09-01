@@ -9,22 +9,23 @@ import {
     getWordsForMonth,
     modifyWordOfTheDay,
 } from "../controllers/wordsController.js";
-import {checkAdmin} from "../utils/auth.js";
+import {checkAdmin, verifyToken} from "../utils/auth.js";
 
 const router = express.Router();
 
-router.get("/admin/all-words", getAllWords);
+router.get("/admin/all-words", verifyToken, getAllWords);
 router.get("/:id", getSingleWord);
 router.get("/random-word/:username", getRandomWord);
-router.put("/wordOf/change", modifyWordOfTheDay);
-router.get("/month/:month", getWordsForMonth);
-router.post("/add", addWord);
+router.put("/wordOf/change", verifyToken, modifyWordOfTheDay);
+router.get("/month/:month", verifyToken, getWordsForMonth);
+router.post("/add", verifyToken, addWord);
 router.delete(
     "/delete/:id",
     (req, res, next) => {
         console.log("Delete route hit");
         next();
     },
+    verifyToken,
     deleteWord
 );
 router.get("/wordOf/todaysWord", getWordOfTheDay);
