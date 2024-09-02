@@ -10,7 +10,7 @@ export const updateRegularGameScore = async (
 ) => {
     try {
         console.log("stuff", word);
-        const { rows: userRows } = await client.query(
+        const {rows: userRows} = await client.query(
             `
                 SELECT current_streak, max_streak, number_of_games, guesses, used_words
                 FROM users
@@ -50,15 +50,14 @@ export const updateRegularGameScore = async (
         const updatedUsedWords = Array.from(usedWordsSet);
         console.log(updatedUsedWords);
 
-        const { rows } = await client.query(
+        const {rows} = await client.query(
             `
                 UPDATE users
-                SET
-                    number_of_games = $1::json,
-                guesses = $2::json,
-                    current_streak = $3,
-                    max_streak = $4,
-                    used_words = $5::text[]
+                SET number_of_games = $1::json,
+                guesses = $2::json
+                  , current_streak = $3
+                  , max_streak = $4
+                  , used_words = $5::text[]
                 WHERE username = $6
                     RETURNING *;
             `,
@@ -89,7 +88,7 @@ export const updateTimedGameScore = async (
     word
 ) => {
     try {
-        const { rows: userRows } = await client.query(
+        const {rows: userRows} = await client.query(
             `
                 SELECT current_streak, max_streak, number_of_games, guesses, used_words
                 FROM users
@@ -130,16 +129,12 @@ export const updateTimedGameScore = async (
 
         const updatedUsedWords = Array.from(usedWordsSet);
 
-        const { rows } = await client.query(
+        const {rows} = await client.query(
             `
                 UPDATE users
-                SET
-                    timed_score = timed_score + $1,
+                SET timed_score     = timed_score + $1,
                     number_of_games = $2::json,
-                    guesses = $3::json,
-                    current_streak = $4,
-                    max_streak = $5,
-                    used_words = $6::text[]
+                    guesses = $3::json, current_streak = $4, max_streak = $5, used_words = $6::text[]
                 WHERE username = $7
                     RETURNING *;
             `,
@@ -160,3 +155,64 @@ export const updateTimedGameScore = async (
         throw error;
     }
 };
+
+export const seedDataGame = async () => {
+    try {
+        await client.query(`
+                    DROP TABLE IF EXISTS game_save;
+                    CREATE TABLE IF NOT EXISTS game_save
+                    (
+                        id
+                        SERIAL
+                        PRIMARY
+                        KEY,
+                        username
+                        VARCHAR
+                    (
+                        255
+                    ) REFERENCES users
+                    (
+                        username
+                    ) ON DELETE CASCADE,
+                        last_play INTEGER DEFAULT 0
+                        )
+            `
+        );
+    } catch (error) {
+        console.error("Failed to seed Game Save!", error);
+    }
+};
+
+// Fetched save data
+export const fetchDataGame = async (username) => {
+    try {
+        const {rows} = await client.query(
+            `
+                SELECT last_played
+                FROM game_save
+                WHERE username = $1
+            `
+            , [username]
+        );
+        return rows[0];
+    } catch (error) {
+        console.error("Failed to fetch data games", error);
+    }
+};
+
+// Function to update Save Data
+export const updateDataGame = async (username, last_played) => {
+    try {
+        const {rows} = await client.query(
+            `
+            UPDATE game_save
+            SET last_played = $2
+            WHERE username = $1
+            RETURNING last_played;
+            `, [username, last_played]
+        );
+        return rows[0];
+    } catch (error) {
+        console.error("Failed to update data game", error);
+    }
+}

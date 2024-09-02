@@ -199,20 +199,29 @@ export const deleteWordFromBank = async (id) => {
 // Function to fetch word of the day
 export const fetchWordOfTheDay = async () => {
     try {
-        const currentMonth = new Date().toLocaleString("default", {month: "long"});
+        const currentMonth = new Date().toLocaleString("default", { month: "long" });
         let currentDate = new Date().getDate().toString();
 
-        const {rows} = await client.query(`
+        const { rows } = await client.query(`
             SELECT words ->> $1 AS todaysWord
             FROM month_words
             WHERE month_name = $2
         `, [currentDate, currentMonth]);
 
-        return rows[0].todaysword;
+        // Format the current date as MM/DD/YYYY
+        const formattedDate = new Date().toLocaleDateString('en-US');
+
+        return {
+            date: formattedDate,
+            wotd: rows[0]?.todaysword || "No word found"
+        };
     } catch (error) {
         console.error("Failed to fetch word of the day");
         console.error(error);
-        return "Error fetching word of the day";
+        return {
+            date: null,
+            wotd: "Error fetching word of the day"
+        };
     }
 };
 

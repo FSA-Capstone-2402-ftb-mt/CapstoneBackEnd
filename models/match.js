@@ -20,14 +20,7 @@ export const seedMatches = async () => {
                 (
                     username
                 ) ON DELETE CASCADE,
-                    player2_username VARCHAR
-                (
-                    255
-                ) NOT NULL REFERENCES users
-                (
-                    username
-                )
-                  ON DELETE CASCADE,
+                    player2_username VARCHAR(255) NOT NULL REFERENCES users(username)ON DELETE CASCADE,
                     scores JSON NOT NULL DEFAULT '{}'::json,
                     guesses JSON NOT NULL DEFAULT '{}'::json,
                     used_words TEXT[] DEFAULT '{}'
