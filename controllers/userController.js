@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import {fetchUserByUsername, registerUser, updatePassword, updateUsername,} from "../models/user.js";
+import {fetchAllUsernames, fetchUserByUsername, registerUser, updatePassword, updateUsername,} from "../models/user.js";
 import {generateToken} from "../utils/auth.js";
 
 // Controller for registration
@@ -84,5 +84,16 @@ export const changePassword = async (req, res) => {
         res.status(200).json({message: "Password updated successfully!", updatedUser});
     } catch (error) {
         res.status(500).json({message: "Failed to update password!"});
+    }
+};
+
+//Controller to fetch all usernames in users table
+
+export const getAllUsernames = async (req, res) => {
+    try {
+        const usernames = await fetchAllUsernames();
+        res.status(200).json(usernames);
+    } catch (error) {
+        console.log(`Failed to get all usernames`, error);
     }
 };

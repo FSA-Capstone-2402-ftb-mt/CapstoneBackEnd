@@ -132,3 +132,17 @@ export const updatePassword = async (username, newPassword) => {
         throw error;
     }
 };
+
+export const fetchAllUsernames = async () => {
+    try {
+        const {rows} = await client.query(
+            `
+                SELECT array_agg(username)
+                FROM public.users
+            `
+        );
+        return rows[0].array_agg;
+    } catch (error) {
+        console.error("Failed to fetch all usernames from DB");
+    }
+}
