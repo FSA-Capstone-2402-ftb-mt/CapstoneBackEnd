@@ -1,5 +1,8 @@
 import {client} from "../config/db.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const salt_count = 10;
 // Seed Users Function
@@ -15,10 +18,32 @@ export const seedUsers = async () => {
                 DROP TABLE IF EXISTS users;
                 CREATE TABLE IF NOT EXISTS users
                 (
-                    id SERIAL UNIQUE,
-                    username VARCHAR(20) NOT NULL UNIQUE CHECK (LENGTH(username) >= 5), -- Minimum char 5
-                    email VARCHAR(255) NOT NULL UNIQUE,
-                    password VARCHAR(128) NOT NULL CHECK (LENGTH(password) >= 8), -- Minimum char 8
+                    id
+                    SERIAL
+                    UNIQUE,
+                    username
+                    VARCHAR
+                (
+                    20
+                ) NOT NULL UNIQUE CHECK
+                (
+                    LENGTH
+                (
+                    username
+                ) >= 5), -- Minimum char 5
+                    email VARCHAR
+                (
+                    255
+                ) NOT NULL UNIQUE,
+                    password VARCHAR
+                (
+                    128
+                ) NOT NULL CHECK
+                (
+                    LENGTH
+                (
+                    password
+                ) >= 8), -- Minimum char 8
                     is_admin BOOLEAN DEFAULT false,
                     is_banned BOOLEAN DEFAULT false,
                     timed_score INTEGER DEFAULT 0,
@@ -26,16 +51,22 @@ export const seedUsers = async () => {
                     max_streak INTEGER DEFAULT 0,
                     guesses JSON NOT NULL DEFAULT '{"guess_1": 0, "guess_2":0, "guess_3": 0, "guess_4": 0, "guess_5": 0, "guess_6": 0}',
                     number_of_games JSON NOT NULL DEFAULT '{"overall_games": 0, "regular_games": 0, "timed_games": 0}',
-                    join_date TIMESTAMP DEFAULT NOW(),
+                    join_date TIMESTAMP DEFAULT NOW
+                (
+                ),
                     used_words TEXT[] DEFAULT '{}',
-                    PRIMARY KEY (username,id)
-                );
+                    PRIMARY KEY
+                (
+                    username,
+                    id
+                )
+                    );
 
                 INSERT INTO users (username, email, password, is_admin)
                 VALUES ('EdwinV', 'edwin-V@email.com', '${secretPassword1}', true),
-                   ('AlbertoM', 'avmrbeto98@gmail.com', '${secretPassword2}', true),
-                   ('TylerS', 'tyler-S@email.com', '${secretPassword3}', true),
-                   ('SlavikT', 'slavik-T@email.com', '${secretPassword4}', true);
+                       ('AlbertoM', 'avmrbeto98@gmail.com', '${secretPassword2}', true),
+                       ('TylerS', 'tyler-S@email.com', '${secretPassword3}', true),
+                       ('SlavikT', 'slavik-T@email.com', '${secretPassword4}', true);
             `
         );
 
@@ -47,35 +78,56 @@ export const seedUsers = async () => {
 };
 
 // Function to register a new user
+
 export const registerUser = async ({username, email, password}) => {
+    const client = await pool.connect();  // Assuming pool is your db connection
     try {
-        const encryptedPassword = await bcrypt.hash(password, salt_count);
+        await client.query('BEGIN');  // Start a transaction
+
+        // Hash the password with bcrypt
+        const saltRounds = 10;
+        const encryptedPassword = await bcrypt.hash(password, saltRounds);
         const join_date = new Date();
 
         // Insert the new user into the users table
         const {rows} = await client.query(
             `
                 INSERT INTO users (username, email, password, join_date, is_admin, is_banned)
-                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username;
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, is_admin;
             `,
             [username, email, encryptedPassword, join_date, false, false]
         );
 
-        // Get the user's ID from the insertion result
-        const userId = rows[0].id;
+        const user = rows[0];  // Get the user data
 
+        // Insert into the game_save table
         await client.query(
             `
                 INSERT INTO game_save (id, username)
                 VALUES ($1, $2);
             `,
-            [userId, username]
+            [user.id, username]
         );
 
-        return rows[0];
-    } catch (e) {
-        console.error("Failed to register user!");
-        console.error(e);
+        // Generate a JWT token
+        const token = jwt.sign(
+            {id: user.id, username: user.username, isAdmin: user.is_admin},
+            JWT_SECRET,
+            {expiresIn: '1h'}
+        );
+
+        // Return token and user information
+        return {
+            token,
+            username: user.username,
+            isAdmin: user.is_admin,
+        };
+    } catch (error) {
+        await client.query('ROLLBACK');  // Rollback the transaction on error
+        console.error("Failed to register user:", error);
+        throw new Error('User registration failed');
+    } finally {
+        client.release();  // Release the client back to the pool
     }
 };
 

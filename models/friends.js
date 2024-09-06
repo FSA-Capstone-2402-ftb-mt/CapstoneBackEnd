@@ -224,6 +224,7 @@ export const fetchRequests = async (username) => {
         console.error("Failed to fetch requests", error);
     }
 }
+
 //  Function to delete a rejected friend request
 export const deleteRejectedRequest = async (user_username, friend_username) => {
     try {

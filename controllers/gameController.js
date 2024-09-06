@@ -1,10 +1,9 @@
 import {fetchDataGame, updateDataGame, updateRegularGameScore, updateTimedGameScore} from "../models/game.js";
-import req from "express/lib/request.js";
-import res from "express/lib/response.js";
 
 // Controller to handle the end of a regular game
 export const endRegularGame = async (req, res) => {
-    const {username, correctGuess, attempts, word} = req.body;
+    const {username} = req.params;
+    const {correctGuess, attempts, word} = req.body;
     try {
         const updatedUser = await updateRegularGameScore(
             username,
@@ -19,7 +18,7 @@ export const endRegularGame = async (req, res) => {
             guesses: updatedUser.guesses,
             number_of_games: updatedUser.number_of_games
         });
-   } catch (error) {
+    } catch (error) {
         res.status(500).json({message: "Failed to end regular game"});
     }
 };
@@ -68,7 +67,7 @@ export const updateGameDataController = async (req, res) => {
     try {
         const gameData = await updateDataGame(username, last_played);
         res.status(200).json(gameData);
-    }catch(error) {
+    } catch (error) {
         res.status(500).json({message: error});
     }
 };

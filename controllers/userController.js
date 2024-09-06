@@ -4,12 +4,22 @@ import {generateToken} from "../utils/auth.js";
 
 // Controller for registration
 export const createUser = async (req, res) => {
-    const {username, email, password} = req.body;
+    const { username, email, password } = req.body;
+
+    // Validate input
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: "Username, email, and password are required" });
+    }
+
     try {
-        const user = await registerUser({username, email, password});
-        res.status(201).json(user);
+        // Call the registerUser function
+        const user = await registerUser({ username, email, password });
+
+        return res.status(201).json(user);  // Respond with token, username, and isAdmin status
     } catch (error) {
-        res.status(500).json({message: "Failed to create user!"});
+        // Log the error and return a 500 error response
+        console.error("Error creating user:", error.message);
+        return res.status(500).json({ message: error.message || "Failed to create user" });
     }
 };
 
