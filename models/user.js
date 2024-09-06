@@ -80,9 +80,7 @@ export const seedUsers = async () => {
 // Function to register a new user
 
 export const registerUser = async ({username, email, password}) => {
-    const client = await pool.connect();  // Assuming pool is your db connection
     try {
-        await client.query('BEGIN');  // Start a transaction
 
         // Hash the password with bcrypt
         const saltRounds = 10;
@@ -123,11 +121,8 @@ export const registerUser = async ({username, email, password}) => {
             isAdmin: user.is_admin,
         };
     } catch (error) {
-        await client.query('ROLLBACK');  // Rollback the transaction on error
-        console.error("Failed to register user:", error);
+
         throw new Error('User registration failed');
-    } finally {
-        client.release();  // Release the client back to the pool
     }
 };
 
