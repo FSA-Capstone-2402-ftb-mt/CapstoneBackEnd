@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./index.js",
-    "seed": "nodemon ./seedDataBase.js"
+    "start": "node ./index.js",
+    "seed": "node ./seedDataBase.js"
   },
   "repository": {
     "type": "git",
