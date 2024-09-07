@@ -54,7 +54,7 @@ export const loginUser = async (req, res) => {
         const admin = user.is_admin
 
         const token = generateToken(user);
-        res.status(200).json({message: "Login successful", token, admin});
+        res.status(200).json({message: "Login successful", token, admin, user});
     } catch (error) {
         res.status(500).json({message: "Failed to Log In"});
     }
